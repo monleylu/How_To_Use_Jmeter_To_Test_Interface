@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+user tutoral
+https://github.com/jfifield/ant-jmeter
+-->
+
+<project name="ant-jmeter-test" default="RunAll_Prd" basedir=".">
+    <tstamp>
+        <format property="time" pattern="yyyyMMddhhmm" />
+    </tstamp>
+    <!-- 需要改成自己本地的 Jmeter 目录-->  
+    <property name="jmeter.home" value="/root/jmeter/apache-jmeter-3.2" />
+    <!-- jmeter生成jtl格式的结果报告的路径--> 
+    <property name="jmeter.result.jtl.dir" value="report_jtl" />
+    <!-- jmeter生成html格式的结果报告的路径-->
+    <property name="jmeter.result.html.dir" value="report_html" />
+	<!-- 测试环境变量-->
+	<property name="AutomationEnv_PRD" value="prd" />
+	<property name="AutomationEnv_PRE" value="pre" />
+	<property name="AutomationEnv_SIT" value="sit" />
+	
+    <!-- 生成的报告的前缀-->  
+    <property name="ReportName" value="TestReport" />
+    <property name="jmeter.result.jtlName" value="${jmeter.result.jtl.dir}/${ReportName}.jtl" />
+    <property name="jmeter.result.htmlName" value="${jmeter.result.html.dir}/${ReportName}.html" />
+ 
+	<!-- 生产环境--> 
+    <target name="RunAll_Prd">
+        <antcall target="ToursAll">
+			<param name="AutomationEnv" value="${AutomationEnv_PRD}"/>
+			<param name="DataSrc" value="${DataSrc}"/>
+		</antcall>
+        <antcall target="report" />
+		<antcall target="copyData" />
+    </target>
+	
+	<!-- 灰度环境--> 
+    <target name="RunAll_Pre">
+        <antcall target="ToursAll">
+			<param name="AutomationEnv" value="${AutomationEnv_PRE}"/>
+			<param name="DataSrc" value="${DataSrc}"/>
+		</antcall>
+        <antcall target="report" />
+		<antcall target="copyData" />
+    </target>
+    
+	<!-- 跟团度假 --> 
+    <target name="ToursAll">
+		<echo message="workspace path is : ${basedir}" />
+		<echo message="Automation Environment is : ${AutomationEnv}"/>
+		<echo message="DataSrc is : ${DataSrc}"/>
+        <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask" />
+        <jmeter jmeterhome="${jmeter.home}"   resultlog="${jmeter.result.jtlName}">
+		<testplans dir="./tours/" includes="tours.jmx" />
+		<!-- 环境参数标识 -->
+		<property name="AutomationEnv" value="${AutomationEnv}"/>
+		<!-- 代码构建路径 -->
+		<property name="CodeWorkSpace" value="${basedir}"/>
+		<!-- 接口用例数据源文件 -->
+		<property name="DataSrc" value="${DataSrc}"/>
+		</jmeter>
+    </target>
+    
+	
+	<!-- 生成的报告的前缀-->
+    <target name="report">
+        <xslt in="${jmeter.result.jtlName}"
+              out="${jmeter.result.htmlName}"
+              style="${jmeter.home}/extras/jmeter-results-detail-report_21.xsl" />
+                <!-- 因为上面生成报告的时候，不会将相关的图片也一起拷贝至目标目录，所以，需要手动拷贝 --> 
+         <copy todir="${jmeter.result.html.dir}">
+            <fileset dir="${jmeter.home}/extras">
+                <include name="collapse.png" />
+                <include name="expand.png" />
+            </fileset>
+        </copy>
+    </target>
+	
+	<!-- 复制执行过程中的测试数据以及自定义测试结果到报告文件夹里去 -->
+    <target name="copyData">
+		<!-- 复制jmeter原始测试数据到报告里去 -->
+		 <copy todir="${jmeter.result.html.dir}/${jmeter.result.jtl.dir}/">
+            <fileset dir="${jmeter.result.jtl.dir}" />
+        </copy>
+		<!-- 复制测试数据到报告里去 -->
+		 <copy todir="${jmeter.result.html.dir}/data/">
+            <fileset dir="data" />
+        </copy>
+		<!-- 复制测试自定义结果到报告里去 -->
+		 <copy todir="${jmeter.result.html.dir}/results/">
+			<fileset dir="results" />
+        </copy>
+    </target>
+	
+</project>

@@ -1,0 +1,2378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="3.2" jmeter="3.2 r1790748">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+    </TestPlan>
+    <hashTree>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1510746360000</longProp>
+        <longProp name="ThreadGroup.end_time">1510746360000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+          <stringProp name="TestPlan.comments">本接口自动化读取数据源，这两个参数只能再命令行返回，如果想图形界面运行，这个会报错，一种是注释掉这行 直接读取数据源就行，另一个是改成想要的数据源</stringProp>
+          <stringProp name="filename">${__P(CodeWorkSpace,)}/conf/${__P(DataSrc,)}</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="variableNames">SrcId</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <stringProp name="delimiter">,</stringProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="true"/>
+        <hashTree>
+          <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="InitTestData" enabled="true">
+            <stringProp name="TestPlan.comments">初始化一些环境数据以及需要读取或者写入的文件夹路径</stringProp>
+            <stringProp name="BeanShellSampler.query">
+//获取测试环境，需要跨线程组传递
+String env =props.getProperty(&quot;AutomationEnv&quot;);
+log.info(&quot;environment is : &quot; + env);
+
+//获取工作目录，需要跨线程组传递
+String codeWorkSpace =props.getProperty(&quot;CodeWorkSpace&quot;);
+log.info(&quot;codeWorkSpace is : &quot; + codeWorkSpace);
+
+//获取工作目录，需要跨线程组传递
+String DataSrc =props.getProperty(&quot;DataSrc&quot;);
+log.info(&quot;DataSrc is : &quot; + DataSrc);
+
+
+//处理非命令行运行或者没有设置参数时默认处理功能
+if(env ==null){
+	log.info(&quot;env is empty,init again&quot;);
+	env=&quot;&quot;;
+}
+
+//window下测试数据以及测试结果路径，windows本地调试时修改这块就行
+//codeWorkSpace 指代码所在的路径
+//处理非命令行运行或者没有设置参数时默认处理功能
+if(codeWorkSpace ==null){
+	log.info(&quot;codeWorkSpace is empty,init again&quot;);
+	props.setProperty(&quot;CodeWorkSpace&quot;, &quot;C:/Users/lujian/Desktop/Jmeter/JmeterSample&quot;);
+}
+
+//数据源
+if(DataSrc ==null){
+	log.info(&quot;DataSrc is empty,init again&quot;);
+	props.setProperty(&quot;DataSrc&quot;, &quot;toursSrcId.csv&quot;);
+}
+
+
+//如果本地图形界面直接运行，默认没有环境设置，会默认走生产的接口
+switch(env){
+	case &quot;&quot;:
+	case &quot;prd&quot;:
+		props.setProperty(&quot;API_Host_Property&quot;, &quot;api.tuniu.com&quot;);
+		props.setProperty(&quot;API_Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;Host_Property&quot;, &quot;m.tuniu.com&quot;);
+		props.setProperty(&quot;Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;testEnv&quot;, &quot;生产环境&quot;);
+	break;
+	case &quot;pre&quot;:
+		props.setProperty(&quot;API_Host_Property&quot;, &quot;api-p.tuniu.com&quot;);
+		props.setProperty(&quot;API_Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;Host_Property&quot;, &quot;m-p.tuniu.com&quot;);
+		props.setProperty(&quot;Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;testEnv&quot;, &quot;灰度环境&quot;);
+	break;
+	case &quot;sit&quot;:
+		props.setProperty(&quot;API_Host_Property&quot;, &quot;api-sit.tuniu.org&quot;);
+		props.setProperty(&quot;API_Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;Host_Property&quot;, &quot;m-sit.tuniu.org&quot;);
+		props.setProperty(&quot;Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;testEnv&quot;, &quot;Sit环境&quot;);
+	break;
+	default:
+		props.setProperty(&quot;API_Host_Property&quot;, &quot;api.tuniu.com&quot;);
+		props.setProperty(&quot;API_Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;Host_Property&quot;, &quot;m.tuniu.com&quot;);
+		props.setProperty(&quot;Port_Property&quot;, &quot;80&quot;);
+		props.setProperty(&quot;testEnv&quot;, &quot;生产环境&quot;);
+}
+
+
+
+		
+
+</stringProp>
+            <stringProp name="BeanShellSampler.filename"></stringProp>
+            <stringProp name="BeanShellSampler.parameters"></stringProp>
+            <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+          </BeanShellSampler>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="InitTestCookie" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">occamrazor.dev.tuniu.org</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/automation/getAllTestCookies?ID=10</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">从奥卡姆剃刀系统获取cookies</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.testcookie.SessionResult;
+import org.apache.commons.io.FileUtils;
+
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+//序列化返回数据
+SessionResult sessionResult = DataUtil.fromJsonString(responseData,SessionResult.class);
+//将获取到的cookies放到属性中，方便不同线程组共享数据
+props.setProperty(&quot;sessionId_Property&quot;, sessionResult.getRows().get(0).getRelateParamete().get(0).getValue());</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetTestData【${SrcId}】" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">occamrazor.dev.tuniu.org</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/automation/getTestcaseWithRelateProduct?ID=${SrcId}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">跟团测试数据,通过是否打开这个选择来决定是读取本地代码还是重新从奥卡姆剃刀系统读取数据</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.testdata.ProductBookInformation;
+import com.tuniu.jmeter.testdata.TestcaseWithRelateProductBean;
+import org.apache.commons.io.FileUtils;
+
+//获取文件存储参数
+vars.put(&quot;CodeWorkSpace&quot;,props.getProperty(&quot;CodeWorkSpace&quot;));
+
+//将数据写入文件
+String dataToWriteFile = vars.get(&quot;CodeWorkSpace&quot;) + &quot;/data/&quot; + vars.get(&quot;TestDataFileName&quot;);
+File file = new File(dataToWriteFile);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+//解析响应数据
+TestcaseWithRelateProductBean testcaseWithRelateProductBean = DataUtil.fromJsonString(responseData,TestcaseWithRelateProductBean.class);
+
+StringBuffer dataBuffer = new StringBuffer();
+//如果文件已存在不再写入文件头部
+if (!file.exists()){
+	String title =&quot;productId&quot;+&quot;,&quot;+&quot;adult&quot;+&quot;,&quot;+&quot;child&quot;+&quot;,&quot;+&quot;freechild&quot;+&quot;,&quot;+&quot;planDate&quot;+System.getProperty(&quot;line.separator&quot;);
+	dataBuffer.append(title);
+}
+
+for (ProductBookInformation productBookInformation:testcaseWithRelateProductBean.getTestProducts()){
+            String tmp = productBookInformation.getProductID()+&quot;,&quot;+productBookInformation.getAdultNum()+&quot;,&quot;+productBookInformation.getChildNum()+&quot;,&quot;+productBookInformation.getChildFreedNum()+&quot;,&quot;+productBookInformation.getBuyDate()+System.getProperty(&quot;line.separator&quot;);
+            dataBuffer.append(tmp);
+}
+
+
+//注意此处使用追加文件还是写入前重置原文件，当需要从多个数据源读文件并且写入同一个文件时，需要第一个配置false，其他配置true
+//当为false时，会先清空文件，当为true，会追加数据到原来的文件
+FileUtils.writeStringToFile(file,dataBuffer.toString(),true);
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="CVars" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="cc" elementType="Argument">
+            <stringProp name="Argument.name">cc</stringProp>
+            <stringProp name="Argument.value">2500</stringProp>
+            <stringProp name="Argument.desc">全局定位城市</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ct" elementType="Argument">
+            <stringProp name="Argument.name">ct</stringProp>
+            <stringProp name="Argument.value">20</stringProp>
+            <stringProp name="Argument.desc">预订入口</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p" elementType="Argument">
+            <stringProp name="Argument.name">p</stringProp>
+            <stringProp name="Argument.value">17675</stringProp>
+            <stringProp name="Argument.desc">售卖渠道</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ov" elementType="Argument">
+            <stringProp name="Argument.name">ov</stringProp>
+            <stringProp name="Argument.value">20</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="dt" elementType="Argument">
+            <stringProp name="Argument.name">dt</stringProp>
+            <stringProp name="Argument.value">1</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="v" elementType="Argument">
+            <stringProp name="Argument.name">v</stringProp>
+            <stringProp name="Argument.value">9.28.0</stringProp>
+            <stringProp name="Argument.desc">版本号</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments">C参数</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="UserVars" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="TestDataFileName" elementType="Argument">
+            <stringProp name="Argument.name">TestDataFileName</stringProp>
+            <stringProp name="Argument.value">ToursData.csv</stringProp>
+            <stringProp name="Argument.desc">测试数据存储的文件名称</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TestResultFileName" elementType="Argument">
+            <stringProp name="Argument.name">TestResultFileName</stringProp>
+            <stringProp name="Argument.value">ToursResult.txt</stringProp>
+            <stringProp name="Argument.desc">测试结果文件名称</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">10</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1502098096000</longProp>
+        <longProp name="ThreadGroup.end_time">1502098096000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="filename">${__P(CodeWorkSpace,)}/data/${TestDataFileName}</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">productId,adult,child,freechild,planDate</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetInfoApp【${productId}】【${Host}】" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${API_Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${API_Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/tour/group/product/getInfo/app?c=${cParameter}&amp;d=${DParameterGetInfoAPP}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">主要判断产品是否已审核</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.common.CInfor;
+import com.tuniu.jmeter.model.tours.pagedetail.DInfo;
+import com.tuniu.jmeter.model.tours.pagedetail.DefaultCityRespModel;
+import com.tuniu.jmeter.view.tours.PageDetail;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.global.GlobalData;
+import com.monleylu.automationresult.model.ResultInfo;
+import com.monleylu.automationresult.model.ResultType;
+
+//获取环境参数
+vars.put(&quot;API_Host&quot;,props.getProperty(&quot;API_Host_Property&quot;));
+vars.put(&quot;API_Port&quot;,props.getProperty(&quot;API_Port_Property&quot;));
+vars.put(&quot;Host&quot;,props.getProperty(&quot;Host_Property&quot;));
+vars.put(&quot;Port&quot;,props.getProperty(&quot;Port_Property&quot;));
+
+//获取cookies
+vars.put(&quot;sessionId&quot;,props.getProperty(&quot;sessionId_Property&quot;));
+
+
+//获取文件存储参数
+vars.put(&quot;CodeWorkSpace&quot;,props.getProperty(&quot;CodeWorkSpace&quot;));
+
+
+
+
+//设置全局预订信息
+GlobalData globalData = new GlobalData();
+ToursBookInfo toursBookInfo=new ToursBookInfo();
+ProductTours productTours= new ProductTours(globalData);
+toursBookInfo.setSessionId(vars.get(&quot;sessionId&quot;));
+toursBookInfo.setProductId(Integer.parseInt(vars.get(&quot;productId&quot;)));
+toursBookInfo.setAdultNum(Integer.parseInt(vars.get(&quot;adult&quot;)));
+toursBookInfo.setChildNum(Integer.parseInt(vars.get(&quot;child&quot;)));
+toursBookInfo.setFreeChildNum(Integer.parseInt(vars.get(&quot;freechild&quot;)));
+toursBookInfo.setPlanDate(vars.get(&quot;planDate&quot;));
+globalData.setToursBookInfo(toursBookInfo);
+
+//申明测试数据结果
+ResultInfo resultInfo = new ResultInfo();
+productTours.setResultInfo(resultInfo);
+//给测试用例起个名字
+resultInfo.setName(&quot;度假跟团接口自动化&quot;);
+//测试用例开始计时
+resultInfo.startTimer();
+//初始化这个测试用例的运行平台以及测试类型
+resultInfo.setPlatform(ResultType.AutomationPlatform.Wireless);
+resultInfo.setPlatformName(ResultType.AutomationPlatform.WirelessName);
+resultInfo.setType(ResultType.AutomationType.Interface);
+resultInfo.setTypeName(ResultType.AutomationType.InterfaceName);
+
+CInfor cInfor = new CInfor(Integer.parseInt(vars.get(&quot;cc&quot;)),Integer.parseInt(vars.get(&quot;ct&quot;)),Integer.parseInt(vars.get(&quot;p&quot;)),Integer.parseInt(vars.get(&quot;ov&quot;)),Integer.parseInt(vars.get(&quot;dt&quot;)),vars.get(&quot;v&quot;));
+
+//设置全局C参数
+globalData.setcInfor(cInfor);
+vars.put(&quot;cParameter&quot;,HttpUtil.getEncodeUrlCParameter(cInfor));
+
+//获取请求入参D
+vars.put(&quot;DParameterGetInfoAPP&quot;,productTours.getPageDetail().getProdInforReqDParameterUrlEncoder());
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="2056421089">{&quot;success&quot;:false,&quot;errorCode&quot;:713003,&quot;msg&quot;:&quot;当前产品卖完了~&quot;,&quot;errorData&quot;:null}</stringProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">判断是否产品卖光了</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">12</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResultAction guiclass="ResultActionGui" testclass="ResultAction" testname="Result Status Action Handler" enabled="true">
+            <stringProp name="TestPlan.comments">如果产品卖光了就不继续执行了</stringProp>
+            <intProp name="OnError.action">4</intProp>
+          </ResultAction>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetDefaultCityInfo【${productId}】" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${API_Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${API_Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">tour/defaultCityInfo?c=${cParameter}&amp;d=${dParameter}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">跟团产品详情页获取第一个有效的预订城市信息</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.common.CInfor;
+import com.tuniu.jmeter.model.tours.pagedetail.DInfo;
+import com.tuniu.jmeter.model.tours.pagedetail.DefaultCityRespModel;
+import com.tuniu.jmeter.view.tours.PageDetail;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+DInfo dInfo = new DInfo(&quot;2500&quot;,&quot;南京&quot;,Integer.parseInt(vars.get(&quot;productId&quot;)));
+
+
+productTours.getPageDetail().setdInfo(dInfo);
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+vars.put(&quot;dParameter&quot;,productTours.getPageDetail().getEncodeDParameter());
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.tours.pagedetail.DefaultCityRespModel;
+import com.tuniu.jmeter.view.tours.PageDetail;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+//PageDetail  pageDetail = new PageDetail();
+PageDetail  pageDetail = productTours.getPageDetail();
+pageDetail.setDefaultCityRespModel(responseData);
+DefaultCityRespModel defaultCityRespModel =pageDetail.getDefaultCityRespModel();
+
+/**归来城市**/
+vars.put(&quot;GlobalBackCityCode&quot;,String.valueOf(defaultCityRespModel.getData().getBackCityCode()));
+vars.put(&quot;GlobalBackCityName&quot;,defaultCityRespModel.getData().getBackCityName());
+log.info(&quot;归来城市:&quot; + vars.get(&quot;GlobalBackCityName&quot;) +&quot;:&quot; + vars.get(&quot;GlobalBackCityCode&quot;));
+
+productTours.getGlobalData().getToursBookInfo().setBackCityCode(String.valueOf(defaultCityRespModel.getData().getBackCityCode()));
+
+
+/**预订城市**/
+vars.put(&quot;GlobalBookCityCode&quot;,String.valueOf(defaultCityRespModel.getData().getBookCityCode()));
+vars.put(&quot;GlobalBookCityName&quot;,defaultCityRespModel.getData().getBackCityName());
+log.info(&quot;预订城市:&quot; + vars.get(&quot;GlobalBookCityName&quot;) +&quot;:&quot; + vars.get(&quot;GlobalBookCityCode&quot;));
+
+productTours.getGlobalData().getToursBookInfo().setBookCityCode(String.valueOf(defaultCityRespModel.getData().getBookCityCode()));
+
+/**出发城市**/
+vars.put(&quot;GlobalDepartCityCode&quot;,String.valueOf(defaultCityRespModel.getData().getDepartCityCode()));
+vars.put(&quot;GlobalDepartCityName&quot;,defaultCityRespModel.getData().getDepartCityName());
+log.info(&quot;出发城市:&quot; + vars.get(&quot;GlobalDepartCityName&quot;) +&quot;:&quot; + vars.get(&quot;GlobalDepartCityCode&quot;));
+
+productTours.getGlobalData().getToursBookInfo().setDepartureCityCode(String.valueOf(defaultCityRespModel.getData().getDepartCityCode()));
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetCalendar【${productId}】" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${API_Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${API_Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/tour/price/calendar?c=${cParameter}&amp;d=${dParameterCalendarReq}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">获取价格日历页的价格</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.tours.pagecalendar.DInfo;
+import com.tuniu.jmeter.view.tours.PageCalendar;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+DInfo dInfo = new DInfo(vars.get(&quot;GlobalBackCityCode&quot;),vars.get(&quot;GlobalBookCityCode&quot;),vars.get(&quot;GlobalDepartCityCode&quot;),Integer.parseInt(vars.get(&quot;productId&quot;)),0);
+PageCalendar pageCalendar = productTours.getPageCalendar();
+pageCalendar.setdInfo(dInfo);
+
+vars.put(&quot;dParameterCalendarReq&quot;,pageCalendar.getEncodeDParameter());
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.tours.pagecalendar.CalendarInforRespModel;
+import com.tuniu.jmeter.view.tours.PageCalendar;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+PageCalendar pageCalendar = productTours.getPageCalendar();
+pageCalendar.setCalendarInforRespModel(responseData);
+
+vars.put(&quot;planDate&quot;,pageCalendar.getCalendarDate());
+log.info(&quot;随机出游日期：&quot;+ vars.get(&quot;planDate&quot;));
+
+productTours.getGlobalData().getToursBookInfo().setPlanDate(vars.get(&quot;planDate&quot;));
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetStepOne【${productId}】" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/api/book/gt/stepOne?c=${cParameter}&amp;d=${dParameterStepOneReq}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">1/2页面请求</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.model.tours.pagestepone.DInfo;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.InsuranceModel;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.PromotionModel;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+PageStepOne pageStepOne = productTours.getPageStepOne();
+DInfo dInfo = new DInfo();
+dInfo.setSessionId(productTours.getGlobalData().getToursBookInfo().getSessionId());
+dInfo.setProductId(productTours.getGlobalData().getToursBookInfo().getProductId());
+dInfo.setBackCityCode(productTours.getGlobalData().getToursBookInfo().getBackCityCode());
+dInfo.setBookCityCode(productTours.getGlobalData().getToursBookInfo().getBookCityCode());
+dInfo.setDepartureCityCode(productTours.getGlobalData().getToursBookInfo().getDepartureCityCode());
+dInfo.setPlanDate(productTours.getGlobalData().getToursBookInfo().getPlanDate());
+dInfo.setFreeChildNum(productTours.getGlobalData().getToursBookInfo().getFreeChildNum());
+dInfo.setChangeOrder(false);
+dInfo.setIsRealTimePrice(0);
+dInfo.setIsRefreshRes(0);
+dInfo.setJourneyNum(0);
+dInfo.setPage(0);
+dInfo.setExcludeChildFlag(0);
+dInfo.setChildNum(productTours.getGlobalData().getToursBookInfo().getChildNum());
+dInfo.setProductType(0);
+dInfo.setCanJumpToPlugin(false);
+dInfo.setAdultNum(productTours.getGlobalData().getToursBookInfo().getAdultNum());
+
+pageStepOne.setdInfo(dInfo);
+
+vars.put(&quot;dParameterStepOneReq&quot;,pageStepOne.getEncodeDParameter());
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.pagestepone.Boss3OrderRequestInput;
+import com.tuniu.jmeter.model.tours.pagestepone.DInfo;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.InsuranceModel;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.PromotionModel;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagestepone.selectres.GTResModel;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+pageStepOne.setStepOneRespModel(responseData);
+pageStepOne.initRes();
+pageStepOne.initSelectAllRes();
+
+/**异步资源请求判断**/
+//是否需要异步加载保险
+vars.putObject(&quot;asynFlagInsuranceModel&quot;, String.valueOf(pageStepOne.isAsynFlagInsuranceModel()));
+
+//是否需要异步加载优惠信息
+vars.putObject(&quot;asynFlagPromotionModel&quot;,String.valueOf(pageStepOne.isAsynFlagPromotionModel()));
+
+//判断是否需要请求汽车票
+vars.put(&quot;asynFlagBusView&quot;,String.valueOf(pageStepOne.isAsynFlagBusView()));
+
+//判断是否需要请求散客票
+//国内机票，通过此标识决定请求什么类型机票
+vars.put(&quot;DomesticFlight&quot;,&quot;false&quot;);
+//国际机票
+vars.put(&quot;InternationalFlight&quot;,&quot;false&quot;);
+//只要存在机票模块，就调用一次散客机票的接口，只是在下单时，优先去库存票
+if (!DataUtil.isNULL(productTours.getPageStepOne().getFlightView())){
+	log.info(&quot;flight view is exist&quot;);
+	switch (productTours.getGlobalData().getFlightData().getDefaultFlightInfo().getIsInternational()){
+		case 0: //国内
+			vars.put(&quot;DomesticFlight&quot;,&quot;true&quot;);
+			vars.put(&quot;dParameterGetDefaultSingleT1&quot;,HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageStepOne().getDefaultSingleFlightDParamter(1))));
+			vars.put(&quot;dParameterGetDefaultSingleT2&quot;,HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageStepOne().getDefaultSingleFlightDParamter(2))));
+			break;
+		case 1://国际
+			vars.put(&quot;InternationalFlight&quot;,&quot;true&quot;);
+			vars.put(&quot;dParameterGetDefaultIntlSingleT2&quot;,HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageStepOne().getDefaultSingleFlightDParamter(2))));
+			break;
+		default:
+			log.info(&quot;未知国内国际类型航班&quot;);
+	}
+}
+
+
+
+
+
+
+//将异步请求参数存储起来，以备后续使用
+//vars.putObject(&quot;Boss3OrderRequestInputObject&quot;,boss3OrderRequestInput);
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+/**test**/
+//已选择的upgrade
+if (!DataUtil.isNULL(productTours.getPageStepOne().getUpGradeView())){
+	if (!DataUtil.isListNULL(productTours.getGlobalData().getGtUpGradeData().getGtResModelArrayList())){
+	for (GTResModel gtResModel:productTours.getGlobalData().getGtUpGradeData().getGtResModelArrayList()){
+		log.info(&quot;已选择跟团资源ID：&quot; + gtResModel.getGtRes() );
+		}
+	}	
+}
+
+
+//已选择singleroom
+if(!DataUtil.isNULL(productTours.getPageStepOne().getSingleRoomView())){
+      if (!DataUtil.isNULL(productTours.getGlobalData().getSingleRoomData().getSelectSingleRoomModel())){
+           log.info(&quot;已选择单房差：&quot; + productTours.getPageStepOne().getGlobalData().getSingleRoomData().getSelectSingleRoomModel().getOptionId());
+        }
+}
+
+
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="TestPlan.comments">国内机票</stringProp>
+          <stringProp name="IfController.condition">${DomesticFlight}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetDefaultSingle_Type_1【${productId}】" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/BsTour/GetDefaultSingle?c=${cParameter}&amp;d=${dParameterGetDefaultSingleT1}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">1 自由挑选 2 往返组合</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置散客机票响应数据
+productTours.getPageStepOne().setDefaultSingleFlightRespData(responseData);
+
+//当无团队票时，需要再次选择一次机票
+if (!DataUtil.isNULL(productTours.getPageStepOne().getFlightView())){
+     productTours.getPageStepOne().initSelectFlightRes();
+}
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetDefaultSingle_Type_2【${productId}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/BsTour/GetDefaultSingle?c=${cParameter}&amp;d=${dParameterGetDefaultSingleT2}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">1 自由挑选 2 往返组合</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置散客机票响应数据
+productTours.getPageStepOne().setDefaultSingleFlightRespData(responseData);
+
+
+
+//当无团队票时，需要再次选择一次机票
+if (!DataUtil.isNULL(productTours.getPageStepOne().getFlightView())){
+     productTours.getPageStepOne().initSelectFlightRes();
+}
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_CheckSingleCabinAndPrice_Domestic【${productId}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/BsTour/CheckSingleCabinAndPrice?c=${cParameter}&amp;d=${dParameterCheckSingleCabinAndPrice}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">国内机票验仓验价</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置验仓验价请求入参
+vars.put(&quot;dParameterCheckSingleCabinAndPrice&quot;,HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageStepOne().getCheckSingleCabinAndPriceDParameter())));
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置响应结果
+productTours.getPageStepOne().setCheckSingleCabinAndPriceRespData(responseData);
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="TestPlan.comments">国际散客机票</stringProp>
+          <stringProp name="IfController.condition">${InternationalFlight}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetDefaultIntlSingle_Type_2【${productId}】" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/BsTour/GetDefaultIntlSingle?c=${cParameter}&amp;d=${dParameterGetDefaultIntlSingleT2}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">1 自由挑选 2 往返组合，国际只有往返组合，因为价格肯定低</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置散客机票响应数据
+productTours.getPageStepOne().setDefaultSingleFlightRespData(responseData);
+
+//当无团队票时，需要再次选择一次机票
+if (!DataUtil.isNULL(productTours.getPageStepOne().getFlightView())){
+     productTours.getPageStepOne().initSelectFlightRes();
+}
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_CheckIntlSingleCabinAndPrice_International【${productId}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/BsTour/CheckIntlSingleCabinAndPrice?c=${cParameter}&amp;d=${dParameterCheckIntlSingleCabinAndPrice}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">国际机票验仓验价</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置验仓验价请求入参
+vars.put(&quot;dParameterCheckIntlSingleCabinAndPrice&quot;,HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageStepOne().getCheckSingleCabinAndPriceDParameter())));
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+//设置响应结果
+productTours.getPageStepOne().setCheckSingleCabinAndPriceRespData(responseData);
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="TestPlan.comments">汽车票</stringProp>
+          <stringProp name="IfController.condition">${asynFlagBusView}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_GetBusDefault【${productId}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/groupTour/getBusDefault?c=${cParameter}&amp;d=${dParameterGetBusDefault}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.ProductTours;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+//获取默认汽车票请求入参
+vars.put(&quot;dParameterGetBusDefault&quot;, productTours.getPageStepOne().getBusView().getDefaultBusReqParameterURLEncoder());
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.ProductTours;
+
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+//设置默认汽车票响应结果
+productTours.getPageStepOne().getBusView().setDefaultBusRespData(responseData);
+
+//重新选择汽车票
+productTours.getPageStepOne().initSelectBusRes();
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_CheckBusTicket【${productId}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/groupTour/checkBusTicket?c=${cParameter}&amp;d=${dParameterCheckBusTicket}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.ProductTours;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+//获取验仓验价汽车票入参
+vars.put(&quot;dParameterCheckBusTicket&quot;, productTours.getPageStepOne().getBusView().getBusCheckReqParameterUrlEncoder());
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.ProductTours;
+
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+//设置验仓验价响应结果
+productTours.getPageStepOne().getBusView().setBusCheckRespData(responseData);
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="TestPlan.comments">保险异步加载</stringProp>
+          <stringProp name="IfController.condition">${asynFlagInsuranceModel}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_Insurance【${productId}】" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">${AsynDParameter}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/gt/GetInsurance?c=${cParameter}</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+
+/**存储异步请求入参**/
+vars.put(&quot;AsynDParameter&quot;,pageStepOne.getEncodeAsynResParameter());
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.PageStepOne;
+import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.InsuranceModel;
+import com.tuniu.jmeter.model.tours.pagestepone.Boss3OrderRequestInput;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+
+
+/**初始化保险数据**/
+pageStepOne.setStepOneInsuranceRespModel(responseData);
+
+//获取到新资源后，再次更新已选资源模块,更新保险资源
+pageStepOne.initSelectInsuranceRes();
+ if (productTours.getGlobalData().getToursBookInfo().getProductId() == 210463489){
+            productTours.getPageStepOne().initRemoveInsuranceRes();
+            if(productTours.getGlobalData().getInsuranceData().getSelectedInsuranceRes().isEmpty()){
+                log.info(&quot;保险已移除！&quot;);
+            }
+        }
+
+
+/**存储异步请求其他资源入参**/
+vars.put(&quot;AsynDParameter&quot;,pageStepOne.getEncodeAsynResParameter());
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+
+/**test**/
+//已选择insurance
+if (!DataUtil.isNULL(productTours.getPageStepOne().getInsuranceView())&amp;&amp;!DataUtil.isListNULL(productTours.getGlobalData().getInsuranceData().getInsuranceArrayList())){
+	for (InsuranceModel insuranceModel :productTours.getGlobalData().getInsuranceData().getSelectedInsuranceRes()){
+		log.info(&quot;已选择保险：&quot; + insuranceModel.getResName() + &quot; ID:&quot; + insuranceModel.getResId());
+	}
+}
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-177041950">{&quot;success&quot;:true,&quot;errorCode&quot;:710000,&quot;msg&quot;:&quot;OK&quot;,&quot;data&quot;:{&quot;insurance&quot;:null}}</stringProp>
+              </collectionProp>
+              <stringProp name="TestPlan.comments">对保险强校验，虽然是可选资源但是保险默认应该有，如果没有人工复查下原因</stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">6</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="TestPlan.comments">促销优惠异步加载</stringProp>
+          <stringProp name="IfController.condition">${asynFlagPromotionModel}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_Promotion【${productId}】" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">${AsynDParameter}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/gt/GetPromotion?c=${cParameter}</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">异步请求优惠促销模块</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.view.tours.PageStepOne;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+
+/**存储异步请求入参**/
+vars.put(&quot;AsynDParameter&quot;,pageStepOne.getEncodeAsynResParameter());
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.view.tours.PageStepOne;
+import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.model.tours.pagestepone.internal.PromotionModel;
+import com.tuniu.jmeter.model.tours.pagestepone.Boss3OrderRequestInput;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**获取PageStepOne对象**/
+PageStepOne pageStepOne = productTours.getPageStepOne();
+
+
+
+/**初始化优惠促销数据**/
+pageStepOne.setStepOnePromotionRespModel(responseData);
+
+//获取到新资源后，再次更新已选资源模块，更新促销优惠资源
+pageStepOne.initSelectPromotionRes();
+
+
+/**存储异步请求入参**/
+vars.put(&quot;AsynDParameter&quot;,pageStepOne.getEncodeAsynResParameter());
+
+
+//将异步请求参数存储起来，以备后续使用
+//vars.putObject(&quot;Boss3OrderRequestInputObject&quot;,boss3OrderRequestInput);
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+
+/**test**/
+//已选择promotion
+if (!DataUtil.isNULL(productTours.getPageStepOne().getPromotionView())&amp;&amp;!DataUtil.isListNULL(productTours.getGlobalData().getPromotionData().getPromotionArrayList())){
+	for (PromotionModel promotionModel:productTours.getGlobalData().getPromotionData().getSelectedPromotionList()){
+		log.info(&quot;已选择优惠：&quot; + promotionModel.getPromotionName() +&quot; ID:&quot; +promotionModel.getPromotionId());
+	}
+}
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-1039463765">{&quot;success&quot;:true,&quot;errorCode&quot;:710000,&quot;msg&quot;:&quot;OK&quot;,&quot;data&quot;:{&quot;promotion&quot;:null}}</stringProp>
+              </collectionProp>
+              <stringProp name="TestPlan.comments">强校验，虽然是可选资源但是默认应该有，如果没有人工复查下原因</stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">6</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_StepTwo【${productId}】" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${StepTwoReqParameters}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/api/book/gt/stepTwo?c=${cParameter}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">跟团2/2请求</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//获取2/2默认请求入参
+vars.put(&quot;StepTwoReqParameters&quot;,DataUtil.toJsonString(productTours.getPageStepOne().getStepTwoDefReqParameters()));
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+/**初始化2/2响应数据**/
+productTours.getPageStepTwo().setStepTwoRespModel(responseData);
+
+/**解析数据，初始化2/2模块**/
+productTours.getPageStepTwo().initRes();
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+
+/**test**/
+//step2BaseInfo
+log.info(&quot;bookid: &quot;+productTours.getPageStepTwo().getStep2BaseInfoView().getStepTwoBaseInfoModel().getBookId());
+
+//contactInfo
+log.info(&quot;联系人姓名：&quot; + productTours.getGlobalData().getTouristData().getContactInformation().getRealname());</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_Tourists【${productId}】" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/api/user/contacter/list?d=${dParameterTouristsReq}&amp;c=${cParameter}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">2/2页面获取联系人</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.model.tours.pagetourist.DInfo;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//构造请求入参
+DInfo dInfo=new DInfo();
+dInfo.setSessionId(productTours.getGlobalData().getToursBookInfo().getSessionId());
+
+//初始化请求入参
+productTours.getPageTourists().setdInfo(dInfo);
+
+vars.put(&quot;dParameterTouristsReq&quot;,productTours.getPageTourists().getEncodeDParameter());
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.view.tours.pagetourists.TouristsView;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+//处理响应数据
+productTours.getPageTourists().setPageTouristRespModel(responseData);
+
+//选择待出游人
+productTours.getPageTourists().setTouristsView(new TouristsView(productTours.getGlobalData()));
+productTours.getPageStepTwo().initTourists(productTours.getPageTourists());
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_SaveOrder【${productId}】" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${SaveOrderPostParameters}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+          <stringProp name="HTTPSampler.port">${Port}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/api/book/gt/AddOrder?c=${cParameter}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">下单</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+
+vars.put(&quot;SaveOrderPostParameters&quot;,DataUtil.toJsonString(productTours.getPageStepTwo().getPageSaveOrderParameters()));
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">import com.tuniu.jmeter.view.tours.ProductTours;
+import com.tuniu.jmeter.model.tours.pagesaveorder.order.SaveOrderInfo;
+
+//初始化下单是否成功状态，默认下单失败
+vars.put(&quot;SaveOrderActionStatus&quot;,&quot;false&quot;);
+//初始化是否需要轮询订单签约状态
+vars.put(&quot;OrderLoopStatus&quot;,&quot;false&quot;);
+//初始化是否需要轮询订单签约状态
+vars.put(&quot;OrderSignStatus&quot;,&quot;false&quot;);
+//初始化是否需要轮询订单支付状态
+vars.put(&quot;OrderPayStatus&quot;,&quot;false&quot;);
+//初始化是否可以签约
+vars.put(&quot;CanSign&quot;,&quot;false&quot;);
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//存储订单状态
+SaveOrderInfo saveOrderInfo = new SaveOrderInfo();
+productTours.getPageSaveOrder().setSaveOrderInfo(saveOrderInfo);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+//初始化响应数据
+productTours.getPageSaveOrder().setAddOrderRespModel(responseData);
+
+//订单状态
+switch (productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderStatus()){
+	case 0:
+		log.info(&quot;下单失败原因：&quot;+ productTours.getPageSaveOrder().getAddOrderRespModel().getData().getErrorInfo());
+		vars.put(&quot;OrderLoopStatus&quot;,&quot;false&quot;);
+		vars.put(&quot;SaveOrderActionStatus&quot;,&quot;false&quot;);
+		productTours.getPageSaveOrder().getSaveOrderInfo().setNeedLoop(false);
+		break;
+	case 1:
+		//在线预订订单，需要轮询支付状态
+		log.info(&quot;订单orderstatus为1&quot;);
+		vars.put(&quot;orderID&quot;,String.valueOf(productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderId()));
+		vars.put(&quot;OrderLoopStatus&quot;,&quot;true&quot;);
+		productTours.getPageSaveOrder().getSaveOrderInfo().setNeedLoop(true);
+	case 2:
+		log.info(&quot;下单成功，订单号：&quot; + productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderId());
+		vars.put(&quot;SaveOrderActionStatus&quot;,&quot;true&quot;);
+		productTours.getPageSaveOrder().getSaveOrderInfo().setOrderId(productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderId());
+	break;
+	default:
+		log.info(&quot;下单失败，原因未知&quot;);
+	break;
+}
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+          <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="BeanShell Assertion" enabled="true">
+            <stringProp name="BeanShellAssertion.query">import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//下单状态
+boolean status= Boolean.valueOf(vars.get(&quot;SaveOrderActionStatus&quot;));
+
+
+//下单成功
+if(status){
+	Failure=false;
+	FailureMessage=&quot;下单成功，订单ID：&quot; +  productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderId();
+	log.info(&quot;Beanshell下单成功，订单ID：&quot; +  productTours.getPageSaveOrder().getAddOrderRespModel().getData().getOrderId());
+}else{
+	Failure=true;
+	FailureMessage=&quot;下单失败,原因：&quot; + productTours.getPageSaveOrder().getAddOrderRespModel().getData().getErrorInfo();
+	log.info(&quot;下单失败,原因：&quot; + productTours.getPageSaveOrder().getAddOrderRespModel().getData().getErrorInfo());
+}
+</stringProp>
+            <stringProp name="BeanShellAssertion.filename"></stringProp>
+            <stringProp name="BeanShellAssertion.parameters"></stringProp>
+            <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
+          </BeanShellAssertion>
+          <hashTree/>
+        </hashTree>
+        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller" enabled="true">
+          <stringProp name="TestPlan.comments">在线预订订单需要轮询支付状态</stringProp>
+          <stringProp name="WhileController.condition">${OrderLoopStatus} </stringProp>
+        </WhileController>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">1000</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_checkCanPay【${productId}-${orderID}】" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/api/book/tour/checkCanPay?c=${cParameter}&amp;d=${dParameterCanPayReq}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.OccupyInterface.OccupyReqModel;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//设置轮询次数
+//将轮询放到最前面，防止java异常导致无法跑到这个计数流程一直无线执行下去
+if(vars.get(&quot;loop&quot;) ==null){
+	vars.put(&quot;loop&quot;,&quot;1&quot;);
+}else{
+	vars.put(&quot;loop&quot;,String.valueOf(Integer.valueOf(vars.get(&quot;loop&quot;)) +1));
+	log.info(&quot;轮询支付开关状态，loop count:&quot; + vars.get(&quot;loop&quot;) );
+}
+if(Integer.parseInt(vars.get(&quot;loop&quot;)) &gt;=30){
+	vars.put(&quot;OrderLoopStatus&quot;,&quot;false&quot;);
+	log.info(&quot;轮询支付开关状态，超过30s仍然未打开支付&quot;);
+}
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//占位参数
+OccupyReqModel occupyReqModel = new OccupyReqModel();
+occupyReqModel.setSessionId(productTours.getGlobalData().getToursBookInfo().getSessionId());
+occupyReqModel.setOrderId(productTours.getPageSaveOrder().getSaveOrderInfo().getOrderId());
+
+productTours.getPageSaveOrder().setOccupyReqModelParameter(occupyReqModel);
+
+vars.put(&quot;dParameterCanPayReq&quot; , HttpUtil.getEncodeUrlParameter(DataUtil.toJsonString(productTours.getPageSaveOrder().getOccupyReqModelParameter())));
+
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+
+
+</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.OccupyInterface.OccupyReqModel;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+
+
+productTours.getPageSaveOrder().setOccupyRespData(responseData);
+
+//判断支付开关是否打开,如果已打开，结束循环
+if (1==productTours.getPageSaveOrder().getOccupyRespModelParameter().getData().getCanPay()){
+	vars.put(&quot;OrderLoopStatus&quot;,&quot;false&quot;);
+	vars.put(&quot;CanSign&quot;,&quot;true&quot;);
+	productTours.getPageSaveOrder().getSaveOrderInfo().setCanSign(true);
+	log.info(&quot;支付开关已打开，结束循环&quot;);
+	vars.put(&quot;loop&quot;,&quot;1&quot;);//重置循环
+}
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+            <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="BeanShell Assertion" enabled="true">
+              <stringProp name="BeanShellAssertion.query">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.OccupyInterface.OccupyReqModel;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+
+if(Integer.parseInt(vars.get(&quot;loop&quot;)) &gt;=30){
+	vars.put(&quot;loop&quot;,&quot;1&quot;);//重置循环
+	Failure=true;
+	FailureMessage=&quot;轮询支付开关状态，超过30s仍然未打开支付，订单ID：&quot; + productTours.getPageSaveOrder().getSaveOrderInfo().getOrderId();
+}</stringProp>
+              <stringProp name="BeanShellAssertion.filename"></stringProp>
+              <stringProp name="BeanShellAssertion.parameters"></stringProp>
+              <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
+            </BeanShellAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="IfController.condition">${CanSign}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tours_orderContractSubmitNew【${productId}-${orderID}】" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${Host}</stringProp>
+            <stringProp name="HTTPSampler.port">${Port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/iapi/appserver/view/orderContractSubmitNew?${dParameterSignReq}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">预订流程签约接口</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.bookflowsign.SignOrderReqParameter;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//签约参数
+SignOrderReqParameter signOrderReqParameter = new SignOrderReqParameter();
+signOrderReqParameter.setEmail(productTours.getGlobalData().getTouristData().getContactInformation().getEmail());
+signOrderReqParameter.setOrderId(String.valueOf(productTours.getPageSaveOrder().getSaveOrderInfo().getOrderId()));
+signOrderReqParameter.setSessionID(productTours.getGlobalData().getToursBookInfo().getSessionId());
+signOrderReqParameter.setProductType(productTours.getPageStepOne().getBaseInfoView().getBaseInfo().getProductType());
+signOrderReqParameter.setClientType(Integer.parseInt(vars.get(&quot;ct&quot;)));
+productTours.getPageSaveOrder().setSignOrderReqParameter(signOrderReqParameter);
+
+vars.put(&quot;dParameterSignReq&quot;,DataUtil.encodeBase64(DataUtil.toJsonString(productTours.getPageSaveOrder().getSignOrderReqParameter())));
+
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.bookflowsign.SignOrderReqParameter;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+/**获取响应结果**/
+responseData = prev.getResponseDataAsString();
+//responseData = DataUtil.decodeBase64(&quot;eyJzdWNjZXNzIjoxLCJtc2ciOiJzdWNjZXNzIiwiZGF0YSI6eyJncm91cFByaWNlIjo2NTkwfX0=&quot;);
+productTours.getPageSaveOrder().setSignOrderRespData(responseData);
+
+if (!DataUtil.isNULL(productTours.getPageSaveOrder().getSignOrderRespDataModel().getData()) &amp;&amp; productTours.getPageSaveOrder().getSignOrderRespDataModel().getData().getGroupPrice()&gt;0){
+	productTours.getPageSaveOrder().getSaveOrderInfo().setCanPay(true);
+	log.info(&quot;订单金额大于0，可以付款&quot;);
+
+}
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+            <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="BeanShell Assertion" enabled="true">
+              <stringProp name="BeanShellAssertion.query">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.model.tours.comm.ToursBookInfo;
+import com.tuniu.jmeter.model.tours.pagesaveorder.OccupyInterface.OccupyReqModel;
+import com.tuniu.jmeter.view.tours.ProductTours;
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+if(productTours.getPageSaveOrder().getSaveOrderInfo().isCanPay()){
+	Failure=false;
+	FailureMessage=&quot;签约成功，订单ID：&quot; + productTours.getPageSaveOrder().getSaveOrderInfo().getOrderId();
+}else{
+	Failure=true;
+	FailureMessage=&quot;签约失败，订单ID：&quot; + productTours.getPageSaveOrder().getSaveOrderInfo().getOrderId();
+}
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+</stringProp>
+              <stringProp name="BeanShellAssertion.filename"></stringProp>
+              <stringProp name="BeanShellAssertion.parameters"></stringProp>
+              <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
+            </BeanShellAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="SaveDataToFileSample【${productId}】" enabled="true">
+          <stringProp name="TestPlan.comments">存储执行结果到文件</stringProp>
+          <stringProp name="BeanShellSampler.query">import com.tuniu.jmeter.common.DataUtil;
+import com.tuniu.jmeter.common.HttpUtil;
+import com.tuniu.jmeter.view.tours.ProductTours;
+import org.apache.commons.io.FileUtils;
+
+
+//获取产品对象
+ProductTours productTours= (ProductTours)vars.getObject(&quot;productToursObj&quot;);
+
+//测试用例执行完毕停止计时
+productTours.getResultInfo().stopTimer();
+        
+//设置测试用例执行结果
+//目前仅根据是否生成订单id判断用例执行情况，未来增加更多标识
+if (!DataUtil.isNULL(productTours.getGlobalData().getAutomationResult()) &amp;&amp; !DataUtil.isNULL(productTours.getGlobalData().getAutomationResult().getSaveOrderInfo())){
+	if (productTours.getGlobalData().getAutomationResult().getSaveOrderInfo().getOrderId()&gt;0){
+	       productTours.getResultInfo().setSuccess(true);
+	}
+}
+
+//序列化测试结果
+try {
+	//存储文件路径，写入文件后需要加个换行，默认数据是追加到原有文件末尾
+	String dataresult= vars.get(&quot;CodeWorkSpace&quot;) + &quot;/results/&quot; + vars.get(&quot;TestResultFileName&quot;);
+	FileUtils.writeStringToFile(new File(dataresult),DataUtil.toJsonString(productTours.getResultData())+System.getProperty(&quot;line.separator&quot;),true);
+	productTours.getResultInfo().setMsg(&quot;下单成功&quot;);
+} catch (IOException e) {
+	e.printStackTrace();
+}
+
+//存储产品对象以供后续使用
+vars.putObject(&quot;productToursObj&quot;,productTours);
+
+</stringProp>
+          <stringProp name="BeanShellSampler.filename"></stringProp>
+          <stringProp name="BeanShellSampler.parameters"></stringProp>
+          <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+        </BeanShellSampler>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>true</responseData>
+            <samplerData>true</samplerData>
+            <xml>true</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>true</responseHeaders>
+            <requestHeaders>true</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>2</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>true</responseData>
+            <samplerData>true</samplerData>
+            <xml>true</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>true</responseHeaders>
+            <requestHeaders>true</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>2</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <PostThreadGroup guiclass="PostThreadGroupGui" testclass="PostThreadGroup" testname="tearDown Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1510746367000</longProp>
+        <longProp name="ThreadGroup.end_time">1510746367000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <stringProp name="TestPlan.comments">暂时用不到这个组件</stringProp>
+      </PostThreadGroup>
+      <hashTree>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="InitEnv" enabled="true">
+          <stringProp name="BeanShellSampler.query">import java.io.File;
+import com.tuniu.jmeter.testdata.ResultInfoSetConvertToTM;
+
+//获取环境参数
+vars.put(&quot;API_Host&quot;,props.getProperty(&quot;API_Host_Property&quot;));
+vars.put(&quot;API_Port&quot;,props.getProperty(&quot;API_Port_Property&quot;));
+vars.put(&quot;Host&quot;,props.getProperty(&quot;Host_Property&quot;));
+vars.put(&quot;Port&quot;,props.getProperty(&quot;Port_Property&quot;));
+
+//获取cookies
+vars.put(&quot;sessionId&quot;,props.getProperty(&quot;sessionId_Property&quot;));
+
+
+//获取文件存储参数
+vars.put(&quot;CodeWorkSpace&quot;,props.getProperty(&quot;CodeWorkSpace&quot;));
+
+//测试环境
+vars.put(&quot;testEnv&quot;,props.getProperty(&quot;testEnv&quot;));
+
+//window系统下不保存数据到ddci，一般windows下都是在调试，如果想保存数据注释掉此处即可
+log.info(&quot;window系统下不保存数据到ddci，一般windows下都是在调试，如果想保存数据注释掉此处即可&quot;);
+if (!System.getProperty(&quot;os.name&quot;).contains(&quot;indows&quot;)){
+	vars.put(&quot;SaveToDDCI&quot;,&quot;true&quot;);    
+}
+
+//获取指定产品210463489下单id，如果获取不到或者为0，标识下单失败
+//测试结果存储文件路径
+String dataresult= vars.get(&quot;CodeWorkSpace&quot;) + &quot;/results/&quot; + vars.get(&quot;TestResultFileName&quot;);
+log.info(&quot;读取测试结果路径：&quot; + dataresult);
+File file = new File(dataresult);
+int orderID = ResultInfoSetConvertToTM.getOrderID(file,210463489);
+if(orderID&gt;0){
+	vars.put(&quot;SaveToTM&quot;,&quot;true&quot;);
+	vars.put(&quot;orderID&quot;,String.valueOf(orderID));
+}
+</stringProp>
+          <stringProp name="BeanShellSampler.filename"></stringProp>
+          <stringProp name="BeanShellSampler.parameters"></stringProp>
+          <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+        </BeanShellSampler>
+        <hashTree/>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="IfController.condition">${SaveToDDCI}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SaveResultToDDCI" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">${Base64resultSet}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">ddci.tuniu.org</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/DDCI/report/dealAuto</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">将测试结果保存一份到DDCI系统</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.time.LocalDate;
+import com.tuniu.jmeter.testdata.ResultInfoSetConvertToDDCI;
+import com.monleylu.automationresult.model.ResultInfoSet;
+
+//存储文件路径，
+String dataresult= vars.get(&quot;CodeWorkSpace&quot;) + &quot;/results/&quot; +vars.get(&quot;TestResultFileName&quot;);
+ResultInfoSet resultInfoSet = ResultInfoSetConvertToDDCI.getResults( new File(dataresult));
+
+//DDCI根据名字区分不同的自动化
+resultInfoSet.setName(&quot;无线度假跟团接口自动化&quot;);
+resultInfoSet.setDepartmentName(&quot;在线预订测试组&quot;);
+String key = LocalDate.now().getYear()+ &quot;-&quot; + LocalDate.now().getMonthValue()+ &quot;-&quot; + LocalDate.now().getDayOfMonth();
+//批次，ddci根据name和批次决定是否合并结果数据，目前批次使用年月日格式，方便同一天的数据进行合并，
+resultInfoSet.setKey(key);
+
+vars.put(&quot;Base64resultSet&quot;,DataUtil.encodeBase64(DataUtil.toJsonString(resultInfoSet)));
+</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-956981946">{&quot;code&quot;:0,&quot;msg&quot;:&quot;success&quot;,&quot;data&quot;:{},&quot;success&quot;:true}</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="true">
+          <stringProp name="IfController.condition">${SaveToTM}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SaveResultToTM" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&quot;func&quot;:&quot;add&quot;,&quot;params&quot;:{&quot;order_id&quot;:${orderID},&quot;product_id&quot;:&quot;210463489&quot;,&quot;tester&quot;:&quot;在线预订测试组&quot;,&quot;env&quot;:&quot;${testEnv}&quot;,&quot;order_type&quot;:&quot;前后台跟团产品接口下单&quot;}}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">tm.sit.tuniu.org</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/restfulApi/orderSave</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="TestPlan.comments">存储指定产品下单结果到TM系统</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+              <boolProp name="resetInterpreter">false</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">import com.tuniu.jmeter.common.DataUtil;
+import org.apache.jmeter.config.*;
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.config.Argument;
+
+Arguments arguments = sampler.getArguments();
+String arg= DataUtil.encodeBase64(arguments.getArgument(0).getValue().trim());
+log.info(&quot;encode result:&quot; + arg);
+Arguments arguments2 = new Arguments();
+sampler.setArguments(arguments2);
+sampler.addNonEncodedArgument(&quot;&quot;,arg,&quot;=&quot;);</stringProp>
+            </BeanShellPreProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+    <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="WorkBench" enabled="true">
+      <boolProp name="WorkBench.save">true</boolProp>
+    </WorkBench>
+    <hashTree/>
+  </hashTree>
+</jmeterTestPlan>
