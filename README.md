@@ -1,1 +1,4 @@
 # How_To_Use_Jmeter_To_Test_Interface
+
+简要教学手册介绍如何使用jmeter进行接口测试
+欢迎pr
